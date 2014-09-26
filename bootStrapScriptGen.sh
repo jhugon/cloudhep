@@ -171,7 +171,7 @@ fi
 echo "export LESS='-R'" >> /etc/profile
 
 sudo apt-get update
-sudo apt-get install -y python-boto build-essential xorg xorg-dev gfortran subversion bzr cvs htop libboost-dev libgsl0-dev libgsl0-dev python-dev swig zlib1g-dev libboost-iostreams-dev scons  automake autoconf libtool clang-3.5 git
+sudo apt-get install -y python-boto build-essential xorg xorg-dev gfortran subversion bzr cvs htop libboost-dev libgsl0-dev libgsl0-dev python-dev swig zlib1g-dev libboost-iostreams-dev scons  automake autoconf libtool clang-3.5 git libsqlite3-dev tcl
 echo "apt-get update'd and install'd" >> /bootstrap.log
 
 mkdir $workdir

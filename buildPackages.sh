@@ -14,7 +14,11 @@ wget http://s3.amazonaws.com/cloud-hep-testing-1/downloadFromS3.py
 chmod +x uploadToS3.py
 chmod +x downloadFromS3.py
 
-echo "#!/bin/bash\n" >> $workdir/setupEnv.sh
+echo "#!/bin/bash" >> $workdir/setupEnv.sh
+echo "" >> $workdir/setupEnv.sh
+echo "export NPROC=$NPROC" >> $workdir/setupEnv.sh
+echo "export workdir=$workdir" >> $workdir/setupEnv.sh
+echo "" >> $workdir/setupEnv.sh
 
 wget ftp://root.cern.ch/root/root_v5.34.21.source.tar.gz
 tar xzf root*gz
@@ -64,25 +68,52 @@ export PATH=$PATH:$workdir/fastjet/bin
 echo "export PATH=\$PATH:\`pwd\`/fastjet/bin" >> $workdir/setupEnv.sh
 echo "made fastjet" >> /bootstrap.log
 
+# For v5
 wget http://www.hepforge.org/archive/lhapdf/lhapdf-5.9.1.tar.gz
-tar xzf lhapdf*.tar.gz
-cd lhapdf*
+tar xzf lhapdf-5*.tar.gz
+cd lhapdf-5*
 ./configure --prefix=$workdir/lhapdf >& logConf
 make -j$NPROC >& logBuild
 make install >& logInstall
 cd $workdir
-export LHAPDFPATH=`pwd`/lhapdf
-echo "export LHAPDFPATH=\`pwd\`/lhapdf" >> $workdir/setupEnv.sh
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$workdir/lhapdf/lib
-echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\`pwd\`/lhapdf/lib" >> $workdir/setupEnv.sh
-export PATH=$PATH:$workdir/lhapdf/bin
-echo "export PATH=\$PATH:\`pwd\`/lhapdf/bin" >> $workdir/setupEnv.sh
-echo "made lhapdf" >> /bootstrap.log
+#export LHAPDFPATH=`pwd`/lhapdf
+#echo "export LHAPDFPATH=\`pwd\`/lhapdf" >> $workdir/setupEnv.sh
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$workdir/lhapdf/lib
+#echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\`pwd\`/lhapdf/lib" >> $workdir/setupEnv.sh
+#export PATH=$PATH:$workdir/lhapdf/bin
+#echo "export PATH=\$PATH:\`pwd\`/lhapdf/bin" >> $workdir/setupEnv.sh
+#echo "made lhapdf" >> /bootstrap.log
+#echo "Downloading PDFs..." >> /bootstrap.log
+#cd $workdir/lhapdf/share/lhapdf
+##lhapdf-getdata CTEQ6ll CTEQ66 CTEQ6m lomod MCal CT10NLO NNPDF23_nlo_as MSTW2008nlo68cl MSTW2008lo68cl 2>&1 >> /bootstrap.log
+#lhapdf-getdata CTEQ6ll CTEQ66 CTEQ6m lomod MCal CT10NLO 2>&1 >> /bootstrap.log
+#echo "Contents of lhapdf/share/lhapdf/" >> /bootstrap.log
+#ls -lh >> /bootstrap.log
+#cd $workdir
+#echo "done Downloading PDFs." >> /bootstrap.log
+
+# For v6
+wget http://www.hepforge.org/archive/lhapdf/LHAPDF-6.1.4.tar.gz 
+tar xzf LHAPDF-6*.tar.gz
+cd LHAPDF*/
+./configure --prefix=$workdir/lhapdf6 >& logConf
+make -j$NPROC >& logBuild
+make install >& logInstall
+cd $workdir
+export LHAPDFPATH=`pwd`/lhapdf6
+echo "export LHAPDFPATH=\`pwd\`/lhapdf6" >> $workdir/setupEnv.sh
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$workdir/lhapdf6/lib
+echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\`pwd\`/lhapdf6/lib" >> $workdir/setupEnv.sh
+export PATH=$PATH:$workdir/lhapdf6/bin
+echo "export PATH=\$PATH:\`pwd\`/lhapdf6/bin" >> $workdir/setupEnv.sh
+export export LIBRARY_PATH=$LIBRARY_PATH:$workdir/lhapdf6/lib
+echo "export LIBRARY_PATH=\$LIBRARY_PATH:\`pwd\`/lhapdf6/lib" >> $workdir/setupEnv.sh
+echo "made lhapdf6" >> /bootstrap.log
 echo "Downloading PDFs..." >> /bootstrap.log
-cd $workdir/lhapdf/share/lhapdf
-#lhapdf-getdata CTEQ6ll CTEQ66 CTEQ6m lomod MCal CT10NLO NNPDF23_nlo_as MSTW2008nlo68cl MSTW2008lo68cl 2>&1 >> /bootstrap.log
-lhapdf-getdata CTEQ6ll CTEQ66 CTEQ6m lomod MCal CT10NLO 2>&1 >> /bootstrap.log
-echo "Contents of lhapdf/share/lhapdf/" >> /bootstrap.log
+cd $workdir/lhapdf6/share/LHAPDF
+#lhapdf install cteq6l1 cteq66 MRST2007lomod MRSTMCal CT10 CT10nlo MSTW2008lo68cl MSTW2008nlo68cl NNPDF30_nlo_as_0118 NNPDF30_nnlo_as_0118 NNPDF23_nlo_as_0118 2>&1 >> /bootstrap.log
+lhapdf install cteq6l1 cteq66 MRST2007lomod MRSTMCal CT10 CT10nlo 2>&1 >> /bootstrap.log
+echo "Contents of lhapdf/share/lhapdf6/" >> /bootstrap.log
 ls -lh >> /bootstrap.log
 cd $workdir
 echo "done Downloading PDFs." >> /bootstrap.log
@@ -92,11 +123,14 @@ tar xzf pythia*gz
 cd pythia*
 ./configure --with-hepmc=$HEPMCLOCATION --with-hepmcversion=$HEPMCVERSION --enable-shared --enable-gzip --with-zlib=/usr/lib/x86_64-linux-gnu >& logConf
 make -j$NPROC >& logBuild
+cp include/Pythia8/Pythia.h include/.  # hack for Delphes
 export PYTHIA8=`pwd`
-export PYTHIA8DATA=`pwd`/xmldoc
+export PYTHIA8DATA=$PYTHIA8/xmldoc
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PYTHIA8/lib
 echo "cd pythia*" >> $workdir/setupEnv.sh
 echo "export PYTHIA8=\`pwd\`" >> $workdir/setupEnv.sh
-echo "export PYTHIA8DATA=\`pwd\`/xmldoc" >> $workdir/setupEnv.sh
+echo "export PYTHIA8DATA=\$PYTHIA8/xmldoc" >> $workdir/setupEnv.sh
+echo "export LIBRARY_PATH=\$LIBRARY_PATH:\$PYTHIA8/lib" >> $workdir/setupEnv.sh
 cd examples
 make -j$NPROC main42
 cd $workdir
@@ -217,6 +251,16 @@ export PYTHIAANALYZERSDIR=$workdir/pythiaAnalyzers
 echo "export PYTHIAANALYZERSDIR=\`pwd\`/pythiaAnalyzers" >> $workdir/setupEnv.sh
 cd $workdir
 
+wget http://cp3.irmp.ucl.ac.be/downloads/Delphes-3.1.2.tar.gz
+tar xzf Delphes*.tar.gz
+cd Delphes*/
+make -j$NPROC >& logBuild
+export DELPHESDIR=`pwd`
+echo "cd Delphes*/" >> $workdir/setupEnv.sh
+echo "export DELPHESDIR=\`pwd\`" >> $workdir/setupEnv.sh
+echo "cd .." >> $workdir/setupEnv.sh
+cd $workdir
+
 chmod +x $workdir/setupEnv.sh
 
-(tar cJf analysisPkgAuto.tar.xz setupEnv.sh versionInfo.txt pythia*/ MG5*/ root/ sherpa/ spods/ fastjet/ rivet/ calchep*/ ThePEG/ Herwig++/ pilemc/ fjcontrib/ lhapdf/ pythiaAnalyzers/ uploadToS3.py downloadFromS3.py; echo "Done compressing analysisPkgAuto.tar.xz" >> /bootstrap.log) &
+(tar cJf analysisPkgAuto.tar.xz setupEnv.sh versionInfo.txt pythia*/ MG5*/ root/ sherpa/ spods/ fastjet/ rivet/ calchep*/ ThePEG/ Herwig++/ pilemc/ fjcontrib/ lhapdf/ lhapdf6/ pythiaAnalyzers/ Delphes*/ uploadToS3.py downloadFromS3.py; echo "Done compressing analysisPkgAuto.tar.xz" >> /bootstrap.log) &
