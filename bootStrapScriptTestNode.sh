@@ -34,7 +34,7 @@ fi
 
 sudo apt-get update >> /bootstrap.log 2>&1
 sudo apt-get upgrade >> /bootstrap.log 2>&1
-sudo apt-get install -y python-boto build-essential xorg xorg-dev gfortran subversion bzr cvs htop libboost-dev libgsl0-dev libgsl0-dev python-dev swig zlib1g-dev libboost-iostreams-dev scons >> /bootstrap.log 2>&1
+sudo apt-get install -y python-boto build-essential xorg xorg-dev gfortran subversion bzr cvs htop libboost-dev libgsl0-dev libgsl0-dev python-dev swig zlib1g-dev libboost-iostreams-dev scons  automake autoconf libtool clang-3.5 git
 echo "apt-get update'd and install'd" >> /bootstrap.log
 
 mkdir $workdir

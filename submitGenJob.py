@@ -25,7 +25,7 @@ parser.add_argument("--calchepBatchFile", help="CalcHEP batch file to run")
 
 parser.add_argument("-d","--dontTerminate", help="Don't Terminate ec2 instance when generation finishes; useful for testing",action='store_true',default=False)
 parser.add_argument("-b","--build", help="re-build all packages from source",action='store_true',default=False)
-parser.add_argument("-i","--instanceType", help="EC2 instance type, default: m3.medium",choices=["m3.medium","c3.large","c3.xlarge"],default="m3.medium")
+parser.add_argument("-i","--instanceType", help="EC2 instance type, default: m3.medium",choices=["m3.medium","c3.large","c3.xlarge","c3.2xlarge","c3.4xlarge","c3.8large"],default="m3.medium")
 parser.add_argument("-n","--numberInstances", help="int, number of EC2 instances to launch, default: 1",default=1, type=int)
 parser.add_argument("--spot",help="Request EC2 Spot instances instead of on-demand ones for reduced cost.  The max price is in the script",action='store_true', default=False)
 parser.add_argument("--pileup",help="int, the poisson mean pileup to generate, default: -",action='store_true', default=False)
@@ -60,6 +60,9 @@ spotInstanceMaxPrices ={
 "m3.medium":0.015,
 "c3.large":0.025,
 "c3.xlarge":0.050,
+"c3.2xlarge":0.10,
+"c3.4xlarge":0.20,
+"c3.8xlarge":0.40,
 }
 spotInstanceMaxPrice = spotInstanceMaxPrices[args.instanceType]
 
@@ -93,6 +96,9 @@ instanceStoreDeviceNums ={
 "m3.medium":1,
 "c3.large":2,
 "c3.xlarge":2,
+"c3.2xlarge":2,
+"c3.4xlarge":2,
+"c3.8xlarge":2,
 }
 
 blockDeviceMap = BlockDeviceMapping()
@@ -113,7 +119,12 @@ nProcNums ={
 "m3.medium":1,
 "c3.large":2,
 "c3.xlarge":4,
+"c3.2xlarge":8,
+"c3.4xlarge":16,
+"c3.8xlarge":32,
 }
+for key in nProcNums:
+  nProcNums[key] *= 2
 processesPerNode = nProcNums[args.instanceType]
 processesToRun = processesPerNode
 

@@ -16,10 +16,10 @@ chmod +x downloadFromS3.py
 
 echo "#!/bin/bash\n" >> $workdir/setupEnv.sh
 
-wget ftp://root.cern.ch/root/root_v5.34.01.source.tar.gz
+wget ftp://root.cern.ch/root/root_v5.34.21.source.tar.gz
 tar xzf root*gz
 cd root
-./configure >& logConf
+./configure --enable-c++11 --enable-roofit --enable-minuit2 >& logConf
 make -j$NPROC >& logBuild
 export ROOTSYS=`pwd`
 echo "export ROOTSYS=\`pwd\`/root" >> $workdir/setupEnv.sh
@@ -49,7 +49,7 @@ echo "export HEPMCVERSION=2.06.05" >> $workdir/setupEnv.sh
 echo "cd .." >> $workdir/setupEnv.sh
 echo "made SPODS" >> /bootstrap.log
 
-wget http://fastjet.fr/repo/fastjet-3.0.3.tar.gz
+wget http://fastjet.fr/repo/fastjet-3.0.6.tar.gz
 tar xzf fastjet*
 cd fastjet*
 ./configure --prefix=$workdir/fastjet --enable-allcxxplugins
@@ -64,7 +64,7 @@ export PATH=$PATH:$workdir/fastjet/bin
 echo "export PATH=\$PATH:\`pwd\`/fastjet/bin" >> $workdir/setupEnv.sh
 echo "made fastjet" >> /bootstrap.log
 
-wget http://www.hepforge.org/archive/lhapdf/lhapdf-5.8.9.tar.gz
+wget http://www.hepforge.org/archive/lhapdf/lhapdf-5.9.1.tar.gz
 tar xzf lhapdf*.tar.gz
 cd lhapdf*
 ./configure --prefix=$workdir/lhapdf >& logConf
@@ -87,7 +87,7 @@ ls -lh >> /bootstrap.log
 cd $workdir
 echo "done Downloading PDFs." >> /bootstrap.log
 
-wget http://home.thep.lu.se/~torbjorn/pythia8/pythia8176.tgz
+wget http://home.thep.lu.se/~torbjorn/pythia8/pythia8186.tgz
 tar xzf pythia*gz
 cd pythia*
 ./configure --with-hepmc=$HEPMCLOCATION --with-hepmcversion=$HEPMCVERSION --enable-shared --enable-gzip --with-zlib=/usr/lib/x86_64-linux-gnu >& logConf
@@ -103,7 +103,7 @@ cd $workdir
 echo "cd .." >> $workdir/setupEnv.sh
 echo "made PYTHIA8" >> /bootstrap.log
 
-wget http://www.hepforge.org/archive/sherpa/SHERPA-MC-1.4.3.tar.gz
+wget http://www.hepforge.org/archive/sherpa/SHERPA-MC-2.1.1.tar.gz
 tar xzf SHERPA*gz
 cd SHERPA*
 ./configure --enable-hepmc2=$HEPMCLOCATION --enable-multithread --prefix=$workdir/sherpa --enable-binreloc --enable-fastjet=$FASTJETPATH --enable-lhole --enable-root=$ROOTSYS --enable-lhapdf=$LHAPDFPATH >& logConf
@@ -116,28 +116,18 @@ export PATH=$PATH:$workdir/sherpa/bin
 echo "export PATH=\$PATH:\`pwd\`/sherpa/bin" >> $workdir/setupEnv.sh
 echo "made SHERPA" >> /bootstrap.log
 
-bzr branch lp:madgraph5 madgraph5
-cd madgraph5
+wget https://launchpad.net/mg5amcnlo/2.0/2.2.0/+download/MG5_aMC_v2.2.1.tar.gz
+tar xzf MG5*.tar.gz
+cd MG5*
 export PATH=$PATH:`pwd`/bin
-echo "cd madgraph5" >> $workdir/setupEnv.sh
+echo "cd MG5*" >> $workdir/setupEnv.sh
 echo "export PATH=\$PATH:\`pwd\`/bin" >> $workdir/setupEnv.sh
 echo "cd .." >> $workdir/setupEnv.sh
-echo "linking lhapdf with madgraph5..." >> /bootstrap.log
-cd $workdir/madgraph5/lib
-ln -s -T $workdir/lhapdf/lib/libLHAPDF.a libLHAPDF.a
-ln -s -T $workdir/lhapdf/lib/libLHAPDF.so libLHAPDF.so
-ln -s -T $workdir/lhapdf/lib/libLHAPDF.so.0 libLHAPDF.so.0
-for i in `ls $workdir/lhapdf/share/lhapdf/*`; do
-  ln -s -T $i `basename $i` 
-done
-echo "contents of madgraph5/lib" >> /bootstrap.log
-ls >> /bootstrap.log
-echo "done linking lhapdf with madgraph5." >> /bootstrap.log
 cd $workdir
-echo "made madgraph5" >> /bootstrap.log
+echo "made MG5_aMC" >> /bootstrap.log
 
-wget http://www.hepforge.org/archive/rivet/Rivet-1.8.1.tar.bz2
-tar xjf Rivet*bz2
+wget http://www.hepforge.org/archive/rivet/Rivet-2.1.2.tar.bz2
+tar xjf Rivet*.tar.bz2
 cd Rivet*
 ./configure --prefix=$workdir/rivet
 make -j$NPROC >& logBuild
@@ -149,14 +139,14 @@ echo "export PATH=\$PATH:\`pwd\`/rivet/bin" >> $workdir/setupEnv.sh
 cd $workdir
 echo "made rivet" >> /bootstrap.log
 
-wget http://theory.sinp.msu.ru/~pukhov/CALCHEP/calchep_3.4.0.tgz
+wget http://theory.sinp.msu.ru/~pukhov/CALCHEP/calchep_3.6.15.tgz
 tar xzf calchep*gz
 cd calchep*
 make >& logBuild
 cd $workdir
 echo "made CalcHEP" >> /bootstrap.log
 
-wget http://www.hepforge.org/archive/thepeg/ThePEG-1.8.0.tar.bz2
+wget http://www.hepforge.org/archive/thepeg/ThePEG-1.9.2.tar.bz2
 tar xjf ThePEG-*.tar.bz2
 cd ThePEG*
 ./configure --with-hepmc=$HEPMCPATH --prefix=$workdir/ThePEG >& logConf
@@ -171,7 +161,7 @@ echo "export PATH=\$PATH:\$THEPEG/bin" >> $workdir/setupEnv.sh
 cd $workdir
 echo "made ThePEG" >> /bootstrap.log
 
-wget http://www.hepforge.org/archive/herwig/Herwig++-2.6.0.tar.bz2
+wget http://www.hepforge.org/archive/herwig/Herwig++-2.7.1.tar.bz2
 tar xjf Herwig*.tar.bz2
 cd Herwig*
 ./configure --with-thepeg=$THEPEG --with-fastjet=$FASTJETPATH --prefix=$workdir/Herwig++ >& logConf
@@ -199,7 +189,7 @@ echo "export PATH=\$PATH:\`pwd\`/pilemc/bin" >> $workdir/setupEnv.sh
 cd $workdir
 echo "made pilemc" >> /bootstrap.log
 
-wget http://fastjet.hepforge.org/contrib/downloads/fjcontrib-1.003.tar.gz
+wget http://fastjet.hepforge.org/contrib/downloads/fjcontrib-1.014.tar.gz
 tar xzf fjcontrib*.tar.gz
 cd fjcontrib*/
 export FJCONTRIBDIR=$workdir/fjcontrib
@@ -213,7 +203,12 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$workdir/fjcontrib/lib
 echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\`pwd\`/fjcontrib/lib" >> $workdir/setupEnv.sh
 echo "made fastjet-contrib" >> /bootstrap.log
 
-svn checkout --username anonymous --password anonymous --non-interactive svn://powhegbox.mib.infn.it/trunk/POWHEG-BOX powheg
+svn checkout --username anonymous --password anonymous --non-interactive svn://powhegbox.mib.infn.it/trunk/POWHEG-BOX-NoUserProcesses powheg
+cd powheg
+for i in "gg_H" "VBF_H" "Z" "W"; do 
+  svn checkout --username anonymous --password anonymous --non-interactive svn://powhegbox.mib.infn.it/trunk/POWHEG-BOX/$i
+done
+cd $workdir
 
 bzr branch lp:/~reg-hugonweb/+junk/myPythiAnalyzers pythiaAnalyzers
 cd pythiaAnalyzers/
@@ -224,4 +219,4 @@ cd $workdir
 
 chmod +x $workdir/setupEnv.sh
 
-(tar cJf analysisPkgAuto.tar.xz setupEnv.sh versionInfo.txt pythia*/ madgraph*/ root/ sherpa/ spods/ fastjet/ rivet/ calchep*/ ThePEG/ Herwig++/ pilemc/ fjcontrib/ lhapdf/ pythiaAnalyzers/ uploadToS3.py downloadFromS3.py; echo "Done compressing analysisPkgAuto.tar.xz" >> /bootstrap.log) &
+(tar cJf analysisPkgAuto.tar.xz setupEnv.sh versionInfo.txt pythia*/ MG5*/ root/ sherpa/ spods/ fastjet/ rivet/ calchep*/ ThePEG/ Herwig++/ pilemc/ fjcontrib/ lhapdf/ pythiaAnalyzers/ uploadToS3.py downloadFromS3.py; echo "Done compressing analysisPkgAuto.tar.xz" >> /bootstrap.log) &
