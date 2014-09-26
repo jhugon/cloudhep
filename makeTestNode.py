@@ -13,7 +13,7 @@ from boto.ec2.blockdevicemapping import BlockDeviceMapping
 parser = argparse.ArgumentParser(description="Creates Test Node")
 parser.add_argument("jobName", help="The job name; ec2 instances will have this name")
 parser.add_argument("-t","--test", help="Test mode: print bootstrap script to screen",action='store_true',default=False)
-parser.add_argument("-i","--instanceType", help="EC2 instance type, default: c1.medium",choices=["t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","c1.medium","c1.xlarge"],default="c1.medium")
+parser.add_argument("-i","--instanceType", help="EC2 instance type, default: m3.medium",choices=["m3.medium","c3.large","c3.xlarge"],default="m3.medium")
 
 args = parser.parse_args()
 
@@ -26,20 +26,16 @@ outputName = args.jobName
 emailAddress = ""
 
 #ec2
-amiString = "ami-a29943cb" # Ubuntu Precise amd64 ebs us-east-1
+amiString = "ami-7449fc1c" # Ubuntu Trusty 14.04 LTS 64-bit Instance Store us-east-1
 placement = "us-east-1a"
 terminateOnFinish = False
 
 ## Setup appropriate block device map for instance storage
 
 instanceStoreDeviceNums ={
-"t1.micro":0,
-"m1.small":1,
-"m1.medium":1,
-"m1.large":2,
-"m1.xlarge":2,
-"c1.medium":2,
-"c1.xlarge":8
+"m3.medium":1,
+"c3.large":2,
+"c3.xlarge":2,
 }
 
 blockDeviceMap = BlockDeviceMapping()
@@ -57,13 +53,9 @@ if instanceStoreDeviceNums[args.instanceType] > 1:
   dataDir = "/data2"
 
 nProcNums ={
-"t1.micro":1,
-"m1.small":1,
-"m1.medium":1,
-"m1.large":2,
-"m1.xlarge":4,
-"c1.medium":1,
-"c1.xlarge":8
+"m3.medium":1,
+"c3.large":2,
+"c3.xlarge":4,
 }
 processesPerNode = nProcNums[args.instanceType]
 processesToRun = processesPerNode

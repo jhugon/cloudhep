@@ -25,7 +25,7 @@ parser.add_argument("--calchepBatchFile", help="CalcHEP batch file to run")
 
 parser.add_argument("-d","--dontTerminate", help="Don't Terminate ec2 instance when generation finishes; useful for testing",action='store_true',default=False)
 parser.add_argument("-b","--build", help="re-build all packages from source",action='store_true',default=False)
-parser.add_argument("-i","--instanceType", help="EC2 instance type, default: c1.medium",choices=["t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","c1.medium","c1.xlarge"],default="c1.medium")
+parser.add_argument("-i","--instanceType", help="EC2 instance type, default: m3.medium",choices=["m3.medium","c3.large","c3.xlarge"],default="m3.medium")
 parser.add_argument("-n","--numberInstances", help="int, number of EC2 instances to launch, default: 1",default=1, type=int)
 parser.add_argument("--spot",help="Request EC2 Spot instances instead of on-demand ones for reduced cost.  The max price is in the script",action='store_true', default=False)
 parser.add_argument("--pileup",help="int, the poisson mean pileup to generate, default: -",action='store_true', default=False)
@@ -52,21 +52,22 @@ if args.build:
 emailAddress = ""
 
 #ec2
-amiString = "ami-a29943cb" # Ubuntu Precise amd64 ebs us-east-1
+amiString = "ami-7449fc1c" # Ubuntu Trusty 14.04 LTS 64-bit Instance Store us-east-1
 placement = "us-east-1a"
 terminateOnFinish = not args.dontTerminate
 
 spotInstanceMaxPrices ={
-"c1.medium":0.08,
-"c1.xlarge":0.30
+"m3.medium":0.015,
+"c3.large":0.025,
+"c3.xlarge":0.050,
 }
 spotInstanceMaxPrice = spotInstanceMaxPrices[args.instanceType]
 
-# For Ubuntu Precise amd64 2013-05-12
-packageURL = "http://s3.amazonaws.com/cloud-hep-testing-1/analysisPkg3.tar.xz"
-packageName = "analysisPkg3.tar.xz"
+# For Ubuntu ....
+packageURL = "null"
+packageName = "null"
 
-minbiasFileURL = "http://s3.amazonaws.com/cloud-hep-testing-1/minbias/outfile0_0.root"
+minbiasFileURL = "null"
 doPileup = 0
 if args.pileup:
   doPileup = 1
@@ -89,13 +90,9 @@ useReducedRedundancy = True
 ## Setup appropriate block device map for instance storage
 
 instanceStoreDeviceNums ={
-"t1.micro":0,
-"m1.small":1,
-"m1.medium":1,
-"m1.large":2,
-"m1.xlarge":2,
-"c1.medium":2,
-"c1.xlarge":8
+"m3.medium":1,
+"c3.large":2,
+"c3.xlarge":2,
 }
 
 blockDeviceMap = BlockDeviceMapping()
@@ -113,13 +110,9 @@ if instanceStoreDeviceNums[args.instanceType] > 1:
   dataDir = "/data2"
 
 nProcNums ={
-"t1.micro":1,
-"m1.small":1,
-"m1.medium":1,
-"m1.large":2,
-"m1.xlarge":4,
-"c1.medium":1,
-"c1.xlarge":8
+"m3.medium":1,
+"c3.large":2,
+"c3.xlarge":4,
 }
 processesPerNode = nProcNums[args.instanceType]
 processesToRun = processesPerNode
