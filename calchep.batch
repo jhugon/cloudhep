@@ -1,0 +1,50 @@
+##################################
+# Model Info
+##################################
+Model   :   Standard Model
+Gauge   :   Feynman
+##################################
+# Process Info
+##################################
+Process :   p,p->Z,p
+Decay   :   Z->m,M
+Composite   :   p=u,U,d,D,G
+##################################
+# PDF Info
+##################################
+pdf1    :   cteq6l (proton)
+pdf2    :   cteq6l (proton)
+##################################
+# Momentum Info
+##################################
+p1  :   4000
+p2  :   4000
+##################################
+# Parameter Info
+##################################
+Parameter   :   MF=4000
+##################################
+# Run Info
+##################################
+#Run parameter   :   MWP
+#Run begin   :   400
+#Run step size   :   50
+#Run n steps :   17
+##################################
+# Event Info
+##################################
+Number of events    :   100
+Filename    :   output.slha
+##################################
+# Parallelization Info
+##################################
+Parallelization method  :   local
+Max number of cpus  :   2
+sleep time  :   3
+##################################
+# Vegas Info
+##################################
+nSess_1 :   5
+nCalls_1    :   100000
+nSess_2 :   5
+nCalls_2    :   100000

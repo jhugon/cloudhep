@@ -1,0 +1,119 @@
+
+## SPODS--Simple Physics Object based Detector Simulation
+## Copyright (C) 2011, 2012 Justin Hugon
+
+#Configuration for CMS
+
+maxEvents: 1000000
+maxGenParticles: 1000
+
+maxElectrons: 10
+maxMuons: 10
+maxPhotons: 10
+maxJets: 10
+
+etaElectronMax: 2.5
+etaMuonMax: 2.4
+etaPhotonMax: 2.5
+etaJetMax: 5.0
+etaMetMax: 5.0
+
+ptElectronMin: 20.0
+ptMuonMin: 20.0
+ptPhotonMin: 30.0
+ptJetMin: 30.0
+
+# jet algorithm must be kt, ca, or antikt
+jetAlg: antikt
+jetAlgR: 0.5
+jetVetoNPartMin: 2
+jetVetoNChargMin: 1
+jetVetoNHadMin: 1
+
+## Isolation
+## Type is either trk, calo, or comb
+muonIsoType: trk
+muonIsoConeSize: 0.2
+muonIsoMinPt: 0.5
+
+electronIsoType: trk
+electronIsoConeSize: 0.3
+electronIsoMinPt: 1.5
+
+photonIsoType: trk
+photonIsoConeSize: 0.3
+photonIsoMinPt: 1.5
+
+# b-tag
+bTagEff: 0.8
+bTagMistagRate: 0.1
+
+#######################################
+#### CMS Detector Parameterization ####
+#######################################
+
+#Muon Resolution (CMS Muon TDR p. 30)
+muonResEtaRanges:
+ - [0,1.1] #Barrel
+ - [1.1,2.4] #Endcap
+
+muonResConstTerm:
+ - 0.00 #Barrel
+ - 0.012 #Endcap
+
+#For Momentum in TeV
+muonResSqrtTerm:
+ - 0.045 #Barrel
+ - 0.0 #Endcap
+
+muonResHighPtCut:
+ - 0.0 #Barrel
+ - 70.0 #Endcap
+
+muonResHighPtConstTerm:
+ - 0.00 #Barrel
+ - 0.00  #Endcap
+
+#For Momentum in TeV
+muonResHighPtSqrtTerm:
+ - 0.045 #Barrel
+ - 0.045 #Endcap
+
+#Photon Resolution (CMS Physics TDR 1, p. 376) #Is only for Barrel and Good R9...
+photonResEtaRanges:
+ - [0,3.0] #Barrel
+
+photonResConstTerm:
+ - 0.0066 #Barrel
+
+photonResOneOverETerm:
+ - 0.185 #Barrel
+
+photonResOneOverSqrtETerm:
+ - 0.036 #Barrel
+
+#Electron Resolution (CMS Physics TDR 1, p. 399)
+#Electrons are Treated Identically to Photons, except:
+# Below this ET Cut
+electronResPtCut: 20.0
+
+#This Resolution is Applied
+electronResConstantTerm: 0.03
+
+#Jet Resolution (CMS Physics TDR 1, p.411)
+
+# Jets below this pt won't be smeared
+jetResPtCut:
+ - 30.0
+
+jetResEtaRanges:
+ - [0,5.0] #Barrel
+
+jetResConstTerm:
+ - 0.033 #Barrel
+
+jetResOneOverETerm:
+ - 5.6 #Barrel
+
+jetResOneOverSqrtETerm:
+ - 1.25 #Barrel

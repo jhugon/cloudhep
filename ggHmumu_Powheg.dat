@@ -1,0 +1,42 @@
+(run){
+  EVENTS 100000;
+  OUTPUT 2;
+  MASS[25]=125.
+  YUKAWA_B=0.;
+  muMass:=0.1056583715
+  YUKAWA_MU=muMass
+  MASS[13]=muMass
+  MASSIVE[13]=1.
+}(run);
+
+(model){
+  MODEL=SM+EHC;
+  FINITE_TOP_MASS=1;
+  FINITE_W_MASS=1
+}(model);
+
+(processes){
+  Process 93 93 -> 25[a]
+    Decay   25[a] -> 13 -13;
+  NLO_QCD_Part BVIRS;
+  Loop_Generator Internal;
+  Print_Graphs 1;
+  Order_EW 1;
+  End process;
+}(processes);
+
+(selector){
+  Mass 13 -13 20. E_CMS
+}(selector)
+
+(me){
+  ME_SIGNAL_GENERATOR Amegic Internal;
+  EVENT_GENERATION_MODE Weighted;
+  NLO_Mode 2;
+  SCALES VAR{MPerp2(p[2]+p[3])};
+}(me);
+
+(beam){
+  BEAM_1  2212; BEAM_ENERGY_1 7000;
+  BEAM_2  2212; BEAM_ENERGY_2 7000;
+}(beam);

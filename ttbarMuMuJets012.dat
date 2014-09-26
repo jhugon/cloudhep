@@ -1,0 +1,23 @@
+(run){
+  EVENTS = 100000
+}(run)
+
+(beam){
+  BEAM_1 2212; BEAM_ENERGY_1 7000;
+  BEAM_2 2212; BEAM_ENERGY_2 7000;
+}(beam)
+
+(processes){
+  Process 93 93 -> 6[a] -6[b] 93{2};
+    DecayOS 6[a] -> 5 24[c];
+      DecayOS 24[c] -> -13 14;
+    DecayOS -6[b] -> -5 -24[d];
+      DecayOS -24[d] -> 13 -14;
+  Order_EW 4; 
+  CKKW sqr(30/E_CMS);
+  End process;
+}(processes)
+
+(me){
+  EVENT_GENERATION_MODE = Weighted
+}(me)
