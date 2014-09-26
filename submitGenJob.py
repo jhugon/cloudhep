@@ -147,47 +147,6 @@ if args.dontTerminate:
 if args.build:
   print("Will build analysis tools from source")
 
-def makeHtmlString(processesPerNode):
-  template = """<!DOCTYPE html>
-<!--
--->
-<html>
-
-<head>
-  <title>Output Directory of ec2-SPODS Job {outputName}</title>
-  <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
-  <meta http-equiv="content-language" content="en-US">
-  <meta name="description" content="Output of ec2-SPODS">
-  <meta name="keywords" content="Collider, HEP, LHC, PYTHIA">
-</head>
-
-<body >
-  <h1>ec2-SPODS Output of Job {outputName}</h1>
-{links}
-
-  <div id="footerDiv" class="foot">
-   <p>
-    Copyright &copy 2012 Justin Hugon
-   </p>
-  </div> 
-</body>
-
-</html>
-
-"""
-
-  link = """
-  <h2> Process {num}<h2>
-  <a href="outfile{num}.root">ROOT Output File {num}</a>
-  <a href="config.txt{num}">Generator Config File {num}</a>
-  <a href="generator.log{num}">Generator Log {num}</a>
-  <a href="spods.log{num}">SPODS Log {num}</a>
-  """
-  links = ""
-  for i in range(processesPerNode):
-    links+=link.format(num=i)
-  return template.format(links=links,outputName=outputName)
-
 ####################################
 
 if not TESTING:
@@ -231,10 +190,6 @@ if not TESTING:
     if useReducedRedundancy:
       key.change_storage_class("REDUCED_REDUNDANCY")
   
-  key = bucket.new_key(outputName+"/index.html")
-  key.set_contents_from_string(makeHtmlString(processesPerNode))
-  key.set_acl(acl) 
-
   if args.build:
     key = bucket.new_key(outputName+"/buildPackages.sh")
     key.set_contents_from_filename("buildPackages.sh")
@@ -283,7 +238,6 @@ for iInstance in range(args.numberInstances):
   
   if TESTING:
     print(bootStrapScript)
-    print(makeHtmlString(processesPerNode))
   else:
     #####################
     #### EC2 ############
