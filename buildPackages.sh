@@ -55,7 +55,7 @@ echo "made HepMC" >> /bootstrap.log
 wget http://fastjet.fr/repo/fastjet-3.0.6.tar.gz
 tar xzf fastjet*
 cd fastjet*
-./configure --prefix=$workdir/fastjet --enable-allcxxplugins
+./configure --prefix=$workdir/fastjet --enable-allcxxplugins >& logConf
 make -j$NPROC >& logBuild
 make install >& logInstall
 cd $workdir
@@ -133,7 +133,7 @@ echo "export PYTHIA8DATA=\$PYTHIA8/xmldoc" >> $workdir/setupEnv.sh
 echo "export LIBRARY_PATH=\$LIBRARY_PATH:\$PYTHIA8/lib" >> $workdir/setupEnv.sh
 echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$PYTHIA8/lib" >> $workdir/setupEnv.sh
 cd examples
-make -j$NPROC main42
+make -j$NPROC main42 >& logBuild42
 cd $workdir
 echo "cd .." >> $workdir/setupEnv.sh
 echo "made PYTHIA8" >> /bootstrap.log
@@ -164,7 +164,7 @@ echo "made MG5_aMC" >> /bootstrap.log
 wget http://www.hepforge.org/archive/rivet/Rivet-2.1.2.tar.bz2
 tar xjf Rivet*.tar.bz2
 cd Rivet*
-./configure --prefix=$workdir/rivet
+./configure --prefix=$workdir/rivet >& logConf
 make -j$NPROC >& logBuild
 make install >& logInstall
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$workdir/rivet/lib
@@ -186,7 +186,7 @@ tar xjf ThePEG-*.tar.bz2
 cd ThePEG*
 ./configure --with-hepmc=$HEPMCPATH --prefix=$workdir/ThePEG >& logConf
 make -j$NPROC >& logBuild
-make install
+make install >& logInstall
 export THEPEG=$workdir/ThePEG
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$THEPEG/lib
 export PATH=$PATH:$THEPEG/bin
@@ -202,7 +202,7 @@ cd Herwig*
 ./configure --with-thepeg=$THEPEG --with-fastjet=$FASTJETPATH --prefix=$workdir/Herwig++ >& logConf
 #./configure --with-thepeg=$THEPEG --with-fastjet=$FASTJETPATH --prefix=$workdir/Herwig++ --with-LHAPDF=$LHAPDF >& logConf
 make -j$NPROC >& logBuild
-make install
+make install >& logInstall
 export HERWIGPP=$workdir/Herwig++
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HERWIGPP/lib
 export PATH=$PATH:$HERWIGPP/bin
@@ -211,18 +211,6 @@ echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$HERWIGPP/lib/Herwig++" >> $work
 echo "export PATH=\$PATH:\$HERWIGPP/bin" >> $workdir/setupEnv.sh
 cd $workdir
 echo "made Herwig++" >> /bootstrap.log
-
-svn checkout http://pilemc.hepforge.org/svn/trunk pilemcRepo
-cd pilemcRepo
-export PILEMCDIR=$workdir/pilemc
-./reconf
-./configure --prefix=$PILEMCDIR --with-hepmc=$HEPMCPATH
-make -j$NPROC >& logBuild
-make install >& logInstall
-export PATH=$PATH:$workdir/pilemc/bin
-echo "export PATH=\$PATH:\`pwd\`/pilemc/bin" >> $workdir/setupEnv.sh
-cd $workdir
-echo "made pilemc" >> /bootstrap.log
 
 wget http://fastjet.hepforge.org/contrib/downloads/fjcontrib-1.014.tar.gz
 tar xzf fjcontrib*.tar.gz
@@ -242,15 +230,12 @@ svn checkout --username anonymous --password anonymous --non-interactive svn://p
 cd powheg
 for i in "gg_H" "VBF_H" "Z" "W"; do 
   svn checkout --username anonymous --password anonymous --non-interactive svn://powhegbox.mib.infn.it/trunk/POWHEG-BOX/$i
+  cd $i
+  make >& logBuild 
+  cd ..
 done
 cd $workdir
-
-bzr branch lp:/~reg-hugonweb/+junk/myPythiAnalyzers pythiaAnalyzers
-cd pythiaAnalyzers/
-scons -j$NPROC >& logBuild
-export PYTHIAANALYZERSDIR=$workdir/pythiaAnalyzers
-echo "export PYTHIAANALYZERSDIR=\`pwd\`/pythiaAnalyzers" >> $workdir/setupEnv.sh
-cd $workdir
+echo "made powheg gg_H VBF_H Z and W" >> /bootstrap.log
 
 wget http://cp3.irmp.ucl.ac.be/downloads/Delphes-3.1.2.tar.gz
 tar xzf Delphes*.tar.gz
@@ -261,7 +246,8 @@ echo "cd Delphes*/" >> $workdir/setupEnv.sh
 echo "export DELPHESDIR=\`pwd\`" >> $workdir/setupEnv.sh
 echo "cd .." >> $workdir/setupEnv.sh
 cd $workdir
+echo "made Delphes" >> /bootstrap.log
 
 chmod +x $workdir/setupEnv.sh
 
-(tar cJf analysisPkgAuto.tar.xz setupEnv.sh versionInfo.txt pythia*/ MG5*/ root/ sherpa/ hepmc/ fastjet/ rivet/ calchep*/ ThePEG/ Herwig++/ pilemc/ fjcontrib/ lhapdf/ lhapdf6/ pythiaAnalyzers/ Delphes*/ uploadToS3.py downloadFromS3.py; echo "Done compressing analysisPkgAuto.tar.xz" >> /bootstrap.log) &
+(tar cJf analysisPkgAuto.tar.xz setupEnv.sh versionInfo.txt pythia*/ MG5*/ root/ sherpa/ hepmc/ fastjet/ rivet/ calchep*/ ThePEG/ Herwig++/ fjcontrib/ lhapdf/ lhapdf6/ Delphes*/ uploadToS3.py downloadFromS3.py; echo "Done compressing analysisPkgAuto.tar.xz" >> /bootstrap.log) &

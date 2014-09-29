@@ -18,8 +18,8 @@ parser.add_argument("jobName", help="The job name; ec2 instances will have this 
 parser.add_argument("-t","--test", help="Test mode: print bootstrap script to screen",action='store_true',default=False)
 
 parser.add_argument("-g","--generator", help="int, Generator to use: 0=Pythia8 (default), 1=Sherpa, 2=CalcHEP+Pythia8, 3=Herwig++",choices=[0,1,2,3],default=0, type=int)
-parser.add_argument("-a","--analyzer",help="int, Analyzer of Generated Data to use: 0=SPODS (default), 1=RIVET",choices=[0,1],default=0, type=int)
-parser.add_argument("-s","--spodsConfig", help="SPODS configuration file to use, defaults to the cmsConfig.yaml file included in SPODS",default="")
+parser.add_argument("-a","--analyzer",help="int, Analyzer of Generated Data to use: 0=Delphes (default), 1=RIVET",choices=[0,1],default=0, type=int)
+parser.add_argument("-s","--delphesConfig", help="Delphes configuration file to use, defaults to examples/delphes_card_CMS.tcl",default="")
 parser.add_argument("-r","--rivetAnalysis", help="RIVET analysis to run, default: 'MC_ZJETS'",default="MC_ZJETS")
 parser.add_argument("--calchepBatchFile", help="CalcHEP batch file to run")
 
@@ -84,10 +84,10 @@ bucketName = "cloud-hep-testing-1"
 location=Location.DEFAULT # DEFAULT for usEast, EU for eu
 acl = "public-read" #public-read, private, public-read-write, authenticated-read
 configKeyName="config.txt"
-spodsKeyName="spodsConfig.txt"
+delphesKeyName="delphesConfig.txt"
 calchepKeyName="calchepConfig.txt"
-if args.spodsConfig == "":
-  spodsKeyName=""
+if args.delphesConfig == "":
+  delphesKeyName=""
 useReducedRedundancy = True
 
 ## Setup appropriate block device map for instance storage
@@ -179,9 +179,9 @@ if not TESTING:
   if useReducedRedundancy:
     key.change_storage_class("REDUCED_REDUNDANCY")
 
-  if args.spodsConfig != "":
-    key = bucket.new_key(outputName+"/"+spodsKeyName)
-    key.set_contents_from_filename(args.spodsConfig)
+  if args.delphesConfig != "":
+    key = bucket.new_key(outputName+"/"+delphesKeyName)
+    key.set_contents_from_filename(args.delphesConfig)
     key.content_type = "text/plain"
     key.set_acl(acl) 
     if useReducedRedundancy:
@@ -237,7 +237,7 @@ for iInstance in range(args.numberInstances):
       useReducedRedundancy=useReducedRedundancy,
       genToUse=args.generator,
       analyzerToUse=args.analyzer,
-      spodsKeyName=spodsKeyName,
+      delphesKeyName=delphesKeyName,
       calchepKeyName=calchepKeyName,
       rivetAnalysis=args.rivetAnalysis,
       minbiasFileURL = minbiasFileURL,

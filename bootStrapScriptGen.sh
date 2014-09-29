@@ -30,10 +30,10 @@ key = bucket.new_key("{outputName}/{configKeyName}")
 key.get_contents_to_filename("temp.cmnd")
 print("key: {outputName}/{configKeyName}")
 
-if "{spodsKeyName}" != "":
-  key = bucket.new_key("{outputName}/{spodsKeyName}")
-  key.get_contents_to_filename("{spodsKeyName}")
-  print("key: {outputName}/{spodsKeyName}")
+if "{delphesKeyName}" != "":
+  key = bucket.new_key("{outputName}/{delphesKeyName}")
+  key.get_contents_to_filename("{delphesKeyName}")
+  print("key: {outputName}/{delphesKeyName}")
 
 if {genToUse} == 2:
   key = bucket.new_key("{outputName}/{calchepKeyName}")
@@ -255,11 +255,11 @@ ANALYZERTOUSE={analyzerToUse}
 {stupidLine}
 ANALYZERCOMMAND=""
 if (($ANALYZERTOUSE == 0)); then
-SPODSCONFIGNAME={spodsKeyName}
-if [ "$SPODSCONFIGNAME" = "" ]; then
-SPODSCONFIGNAME="spods*/test/cmsConfig.yaml"
+DELPHESCONFIGNAME={delphesKeyName}
+if [ "$DELPHESCONFIGNAME" = "" ]; then
+DELPHESCONFIGNAME="$DELPHESDIR/examples/delphes_card_CMS.tcl"
 fi
-ANALYZERCOMMAND="./spods*/bin/SPODS $SPODSCONFIGNAME temp$i.hepmc2g {dataDir}/temp$i.root"
+ANALYZERCOMMAND="cat temp$i.hepmc2g | $DELPHESDIR/DelphesHepMC $DELPHESCONFIGNAME {dataDir}/temp$i.root"
 if (($DOPILEUP == 1)); then
   echo "Using Pileup" >> /bootstrap.log
   ANALYZERCOMMAND=$ANALYZERCOMMAND" -p minbias.root"
