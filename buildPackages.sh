@@ -36,22 +36,21 @@ export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
 echo "export PYTHONPATH=\$ROOTSYS/lib:\$PYTHONPATH" >> $workdir/setupEnv.sh
 echo "made ROOT" >> /bootstrap.log
 
-bzr branch lp:spods spods
-#bzr branch lp:~reg-hugonweb/+junk/spodsNJ spods
-cd spods*
-./build.sh -j$NPROC >& logBuild
-export HEPMCLOCATION=`pwd`/external/HepMC
-export HEPMCPATH=`pwd`/external/HepMC
-export FASTJETPATH=`pwd`/external/fastjet
-echo "cd spods*" >> $workdir/setupEnv.sh
-echo "export HEPMCLOCATION=\`pwd\`/external/HepMC" >> $workdir/setupEnv.sh
-echo "export HEPMCPATH=\`pwd\`/external/HepMC" >> $workdir/setupEnv.sh
-echo "export FASTJETPATH=\`pwd\`/external/fastjet" >> $workdir/setupEnv.sh
-cd $workdir
-export HEPMCVERSION=2.06.05
-echo "export HEPMCVERSION=2.06.05" >> $workdir/setupEnv.sh
-echo "cd .." >> $workdir/setupEnv.sh
-echo "made SPODS" >> /bootstrap.log
+wget http://lcgapp.cern.ch/project/simu/HepMC/download/HepMC-2.06.09.tar.gz
+tar xzf HepMC*.tar.gz
+cd HepMC*/
+./configure --prefix=$workdir/hepmc --with-momentum=GEV --with-length=CM >& logConf
+make -j$NPROC >& logBuild
+make install >& logInstall
+export HEPMCLOCATION=$workdir/hepmc
+export HEPMCPATH=$HEPMCLOCATION
+echo "export HEPMCLOCATION=\`pwd\`/hepmc" >> $workdir/setupEnv.sh
+echo "export HEPMCPATH=$HEPMCLOCATION" >> $workdir/setupEnv.sh
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HEPMCLOCATION/lib
+echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$HEPMCLOCATION/lib" >> $workdir/setupEnv.sh
+export HEPMCVERSION=2.06.09
+echo "export HEPMCVERSION=2.06.09" >> $workdir/setupEnv.sh
+echo "made HepMC" >> /bootstrap.log
 
 wget http://fastjet.fr/repo/fastjet-3.0.6.tar.gz
 tar xzf fastjet*
@@ -126,11 +125,13 @@ make -j$NPROC >& logBuild
 cp include/Pythia8/Pythia.h include/.  # hack for Delphes
 export PYTHIA8=`pwd`
 export PYTHIA8DATA=$PYTHIA8/xmldoc
+export LIBRARY_PATH=$LIBRARY_PATH:$PYTHIA8/lib
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PYTHIA8/lib
 echo "cd pythia*" >> $workdir/setupEnv.sh
 echo "export PYTHIA8=\`pwd\`" >> $workdir/setupEnv.sh
 echo "export PYTHIA8DATA=\$PYTHIA8/xmldoc" >> $workdir/setupEnv.sh
 echo "export LIBRARY_PATH=\$LIBRARY_PATH:\$PYTHIA8/lib" >> $workdir/setupEnv.sh
+echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$PYTHIA8/lib" >> $workdir/setupEnv.sh
 cd examples
 make -j$NPROC main42
 cd $workdir
@@ -263,4 +264,4 @@ cd $workdir
 
 chmod +x $workdir/setupEnv.sh
 
-(tar cJf analysisPkgAuto.tar.xz setupEnv.sh versionInfo.txt pythia*/ MG5*/ root/ sherpa/ spods/ fastjet/ rivet/ calchep*/ ThePEG/ Herwig++/ pilemc/ fjcontrib/ lhapdf/ lhapdf6/ pythiaAnalyzers/ Delphes*/ uploadToS3.py downloadFromS3.py; echo "Done compressing analysisPkgAuto.tar.xz" >> /bootstrap.log) &
+(tar cJf analysisPkgAuto.tar.xz setupEnv.sh versionInfo.txt pythia*/ MG5*/ root/ sherpa/ hepmc/ fastjet/ rivet/ calchep*/ ThePEG/ Herwig++/ pilemc/ fjcontrib/ lhapdf/ lhapdf6/ pythiaAnalyzers/ Delphes*/ uploadToS3.py downloadFromS3.py; echo "Done compressing analysisPkgAuto.tar.xz" >> /bootstrap.log) &
