@@ -253,13 +253,14 @@ fi
 genpids=""
 ANALYZERTOUSE={analyzerToUse}
 {stupidLine}
+cd $workdir
 ANALYZERCOMMAND=""
 if (($ANALYZERTOUSE == 0)); then
 DELPHESCONFIGNAME={delphesKeyName}
 if [ "$DELPHESCONFIGNAME" = "" ]; then
 DELPHESCONFIGNAME="$DELPHESDIR/examples/delphes_card_CMS.tcl"
 fi
-ANALYZERCOMMAND="cat temp$i.hepmc2g | $DELPHESDIR/DelphesHepMC $DELPHESCONFIGNAME {dataDir}/temp$i.root"
+ANALYZERCOMMAND="$DELPHESDIR/DelphesHepMC $DELPHESCONFIGNAME {dataDir}/temp$i.root"
 if (($DOPILEUP == 1)); then
   echo "Using Pileup" >> /bootstrap.log
   ANALYZERCOMMAND=$ANALYZERCOMMAND" -p minbias.root"
@@ -271,63 +272,25 @@ if (($ANALYZERTOUSE == 1)); then
 ANALYZERCOMMAND="rivet -a {rivetAnalysis} temp$i.hepmc2g"
 fi
 
-echo "ANALYZERCOMMAND is: \n $ANALYZERCOMMAND" >> /bootstrap.log
-
 cd $workdir
-if (($GENTOUSE == 0)); then
 echo "Starting Pythia & Spods Job $i" >> /bootstrap.log
 cp temp.cmnd temp$i.cmnd
 echo "Random:setSeed = on" >> temp$i.cmnd
 echo "Random:seed = $((1000+{instanceNumber}*30+$i))" >> temp$i.cmnd
 mkfifo temp$i.hepmc2g
-cat > temp$i.hepmc2g &
-exec 3<temp$i.hepmc2g &
-./pythia*/examples/main42.exe temp$i.cmnd temp$i.hepmc2g >& logGen$i &
+#cat > temp$i.hepmc2g &
+#exec 3<temp$i.hepmc2g &
+GENERATORCOMMAND="./pythia*/examples/main42.exe temp$i.cmnd temp$i.hepmc2g"
+echo "ANALYZERCOMMAND is: $ANALYZERCOMMAND" >> /bootstrap.log
+echo "GENERATORCOMMAND is: $GENERATORCOMMAND" >> /bootstrap.log
+$GENERATORCOMMAND >& logGen$i &
 genpids=$genpids$!" "
-$ANALYZERCOMMAND >& logAna$i &
-genpids=$genpids$!" "
+if (($ANALYZERTOUSE == 0)); then
+  cat temp$i.hepmc2g | $ANALYZERCOMMAND >& logAna$i &
+else
+  $ANALYZERCOMMAND >& logAna$i &
 fi
-if (($GENTOUSE == 1)); then
-echo "Starting Sherpa & Spods Job $i" >> /bootstrap.log
-mkfifo temp$i.hepmc2g
-cat > temp$i.hepmc2g &
-exec 3<temp$i.hepmc2g &
-Sherpa -f temp.cmnd -R $((1000+{instanceNumber}*30+$i)) HEPMC2_GENEVENT_OUTPUT=temp$i >& logGen$i &
 genpids=$genpids$!" "
-$ANALYZERCOMMAND >& logAna$i &
-genpids=$genpids$!" "
-fi
-if (($GENTOUSE == 2)); then
-echo "Starting lhe+Pythia & Spods Job $i" >> /bootstrap.log
-cp temp.cmnd temp$i.cmnd
-echo "Random:setSeed = on" >> temp$i.cmnd
-echo "Random:seed = $((1000+{instanceNumber}*30+$i))" >> temp$i.cmnd
-echo "Beams:frameType = 4" >> temp$i.cmnd
-echo "Beams:LHEF = input$i.lhe" >> temp$i.cmnd
-mkfifo temp$i.hepmc2g
-cat > temp$i.hepmc2g &
-exec 3<temp$i.hepmc2g &
-./pythia*/examples/main42.exe temp$i.cmnd temp$i.hepmc2g >& logGen$i &
-genpids=$genpids$!" "
-$ANALYZERCOMMAND >& logAna$i &
-genpids=$genpids$!" "
-fi
-if (($GENTOUSE == 3)); then
-echo "Starting Herwig++ Job $i" >> /bootstrap.log
-cat temp.cmnd | sed "s/^saverun.*//" > tempMod.cmnd
-cat tempMod.cmnd | sed "s/HepMCFile:Filename.*/HepMCFile:Filename temp$i.hepmc2g/" > tempMod2.cmnd
-echo "saverun temp$i LHCGenerator" >> tempMod2.cmnd
-cp tempMod2.cmnd temp$i.cmnd
-randomSeed=$((1000+{instanceNumber}*30+$i))
-mkfifo temp$i.hepmc2g
-cat > temp$i.hepmc2g &
-exec 3<temp$i.hepmc2g &
-Herwig++ -s $randomSeed read temp$i.cmnd >& logGenRead$i
-Herwig++ -s $randomSeed run temp$i.run >& logGen$i &
-genpids=$genpids$!" "
-$ANALYZERCOMMAND >& logAna$i &
-genpids=$genpids$!" "
-fi
 done
 echo "Started Pythia & Spods Jobs" >> /bootstrap.log
 echo "pids: "$genpids >> /bootstrap.log
