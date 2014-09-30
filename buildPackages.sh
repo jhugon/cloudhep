@@ -110,8 +110,8 @@ echo "export LIBRARY_PATH=\$LIBRARY_PATH:\`pwd\`/lhapdf6/lib" >> $workdir/setupE
 echo "made lhapdf6" >> /bootstrap.log
 echo "Downloading PDFs..." >> /bootstrap.log
 cd $workdir/lhapdf6/share/LHAPDF
-#lhapdf install cteq6l1 cteq66 MRST2007lomod MRSTMCal CT10 CT10nlo MSTW2008lo68cl MSTW2008nlo68cl NNPDF30_nlo_as_0118 NNPDF30_nnlo_as_0118 NNPDF23_nlo_as_0118 2>&1 >> /bootstrap.log
-lhapdf install cteq6l1 cteq66 MRST2007lomod MRSTMCal CT10 CT10nlo 2>&1 >> /bootstrap.log
+#lhapdf install cteq6l1 cteq66 MRST2007lomod MRSTMCal CT10 CT10nlo MSTW2008lo68cl MSTW2008nlo68cl NNPDF30_nlo_as_0118 NNPDF30_nnlo_as_0118 NNPDF23_nlo_as_0118  >& $workdir/logDLPDFs
+lhapdf install cteq6l1 cteq66 MRST2007lomod MRSTMCal CT10 CT10nlo >& $workdir/logDLPDFs
 echo "Contents of lhapdf/share/lhapdf6/" >> /bootstrap.log
 ls -lh >> /bootstrap.log
 cd $workdir
@@ -226,10 +226,10 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$workdir/fjcontrib/lib
 echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\`pwd\`/fjcontrib/lib" >> $workdir/setupEnv.sh
 echo "made fastjet-contrib" >> /bootstrap.log
 
-svn checkout --username anonymous --password anonymous --non-interactive svn://powhegbox.mib.infn.it/trunk/POWHEG-BOX-NoUserProcesses powheg
+svn checkout --username anonymous --password anonymous --non-interactive svn://powhegbox.mib.infn.it/trunk/POWHEG-BOX-NoUserProcesses powheg >& logCOPowheg
 cd powheg
 for i in "gg_H" "VBF_H" "Z" "W"; do 
-  svn checkout --username anonymous --password anonymous --non-interactive svn://powhegbox.mib.infn.it/trunk/POWHEG-BOX/$i
+  svn checkout --username anonymous --password anonymous --non-interactive svn://powhegbox.mib.infn.it/trunk/POWHEG-BOX/$i >& logCO$i
   cd $i
   make >& logBuild 
   cd ..
@@ -237,17 +237,29 @@ done
 cd $workdir
 echo "made powheg gg_H VBF_H Z and W" >> /bootstrap.log
 
+cd $workdir
 wget http://cp3.irmp.ucl.ac.be/downloads/Delphes-3.1.2.tar.gz
 tar xzf Delphes*.tar.gz
 cd Delphes*/
 make -j$NPROC >& logBuild
 export DELPHESDIR=`pwd`
-echo "cd Delphes*/" >> $workdir/setupEnv.sh
+echo "cd \$workdir/Delphes*/" >> $workdir/setupEnv.sh
 echo "export DELPHESDIR=\`pwd\`" >> $workdir/setupEnv.sh
-echo "cd .." >> $workdir/setupEnv.sh
+echo "cd \$workdir" >> $workdir/setupEnv.sh
 cd $workdir
 echo "made Delphes" >> /bootstrap.log
 
+cd $workdir
+export GOSAMDIR="$workdir/local"
+wget http://gosam.hepforge.org/gosam_installer.py
+python gosam_installer.py -b -j $NPROC >& logBuildGosam
+source $GOSAMDIR/bin/gosam_setup_env.sh
+echo "export GOSAMDIR=\`pwd\`/local" >> $workdir/setupEnv.sh
+echo "source \$GOSAMDIR/bin/gosam_setup_env.sh" >> $workdir/setupEnv.sh
+echo "made GOSAM" >> /bootstrap.log
+
 chmod +x $workdir/setupEnv.sh
 
-(tar cJf analysisPkgAuto.tar.xz setupEnv.sh versionInfo.txt pythia*/ MG5*/ root/ sherpa/ hepmc/ fastjet/ rivet/ calchep*/ ThePEG/ Herwig++/ fjcontrib/ lhapdf/ lhapdf6/ Delphes*/ uploadToS3.py downloadFromS3.py; echo "Done compressing analysisPkgAuto.tar.xz" >> /bootstrap.log) &
+cd $workdir
+(tar cJf analysisPkgAuto.tar.xz setupEnv.sh versionInfo.txt pythia*/ MG5*/ root/ sherpa/ hepmc/ fastjet/ rivet/ calchep*/ ThePEG/ Herwig++/ fjcontrib/ lhapdf/ lhapdf6/ Delphes*/ local/ uploadToS3.py downloadFromS3.py; echo "Done compressing analysisPkgAuto.tar.xz" >> /bootstrap.log) &
+echo $! > /tmp/pidForXZJob

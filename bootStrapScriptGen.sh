@@ -12,6 +12,8 @@ NUM_VOLUMES={numVolumes}
 DOPILEUP={doPileup}
 GENTOUSE={genToUse}
 SHERPAPACKAGE={sherpaPackage}
+genpids=""
+export HOME="/root"  #Hack to try to make Gosam work
 
 read -d '' pythonSetupCommand <<"EOF"
 ####################################
@@ -185,24 +187,31 @@ python -c "$pythonSetupCommand" >& logPythonSetupCommand 2>&1
 echo "Ran python Setup Command" >> /bootstrap.log
 echo `date` >> /bootstrap.log
 
+cd $workdir
 if (({reBuild})); then
   echo "Starting build script" >> /bootstrap.log
   bash buildPackages.sh >> /bootstrap.log
-  source setupEnv.sh
+  genpids=$(cat /tmp/pidForXZJob)" "
   echo "built and setup analysisPkg" >> /bootstrap.log
 else
-  cd $workdir
   wget {packageURL}
   tar xJf {packageName}
-  source setupEnv.sh
   echo "downloaded and setup analysisPkg" >> /bootstrap.log
 fi
 
+source setupEnv.sh
+
+echo "###########################################" >> /bootstrap.log
+echo "############## ENV ########################" >> /bootstrap.log
+echo "###########################################" >> /bootstrap.log
+env >> /bootstrap.log
+echo "###########################################" >> /bootstrap.log
+echo "###########################################" >> /bootstrap.log
+echo "###########################################" >> /bootstrap.log
 
 if (($DOPILEUP == 1)); then
   wget {minbiasFileURL} -O minbias.root
 fi
-
 
 #Pre-calculate ME/xsec In Sherpa
 if (($GENTOUSE == 1)); then
@@ -235,41 +244,40 @@ fi
 
 #CalcHEP
 if (($GENTOUSE == 2)); then
-echo "Starting CalcHEP Job" >> /bootstrap.log
-echo `date` >> /bootstrap.log
-cd $workdir/calchep*/
-./mkUsrDir usrDir
-cd usrDir
-cp $workdir/{calchepKeyName} batch.txt
-sed -i "s/^Filename.*/Filename   :   output.slha/" batch.txt
-./calchep_batch batch.txt
-cd Events
-gunzip output.slha-single.lhe.gz
-cp output.slha-single.lhe $workdir/input0.lhe
-echo `date` >> /bootstrap.log
+  echo "Starting CalcHEP Job" >> /bootstrap.log
+  echo `date` >> /bootstrap.log
+  cd $workdir/calchep*/
+  ./mkUsrDir usrDir
+  cd usrDir
+  cp $workdir/{calchepKeyName} batch.txt
+  sed -i "s/^Filename.*/Filename   :   output.slha/" batch.txt
+  ./calchep_batch batch.txt
+  cd Events
+  gunzip output.slha-single.lhe.gz
+  cp output.slha-single.lhe $workdir/input0.lhe
+  echo `date` >> /bootstrap.log
 fi
 
 ## Running Jobs
-genpids=""
 ANALYZERTOUSE={analyzerToUse}
 {stupidLine}
 cd $workdir
 ANALYZERCOMMAND=""
 if (($ANALYZERTOUSE == 0)); then
-DELPHESCONFIGNAME={delphesKeyName}
-if [ "$DELPHESCONFIGNAME" = "" ]; then
-DELPHESCONFIGNAME="$DELPHESDIR/examples/delphes_card_CMS.tcl"
-fi
-ANALYZERCOMMAND="$DELPHESDIR/DelphesHepMC $DELPHESCONFIGNAME {dataDir}/temp$i.root"
-if (($DOPILEUP == 1)); then
-  echo "Using Pileup" >> /bootstrap.log
-  ANALYZERCOMMAND=$ANALYZERCOMMAND" -p minbias.root"
-else
-  echo "Not using Pileup" >> /bootstrap.log
-fi
+  DELPHESCONFIGNAME={delphesKeyName}
+  if [ "$DELPHESCONFIGNAME" = "" ]; then
+    DELPHESCONFIGNAME="$DELPHESDIR/examples/delphes_card_CMS.tcl"
+  fi
+  ANALYZERCOMMAND="$DELPHESDIR/DelphesHepMC $DELPHESCONFIGNAME {dataDir}/temp$i.root"
+  if (($DOPILEUP == 1)); then
+    echo "Using Pileup" >> /bootstrap.log
+    ANALYZERCOMMAND=$ANALYZERCOMMAND" -p minbias.root"
+  else
+    echo "Not using Pileup" >> /bootstrap.log
+  fi
 fi
 if (($ANALYZERTOUSE == 1)); then
-ANALYZERCOMMAND="rivet -a {rivetAnalysis} temp$i.hepmc2g"
+  ANALYZERCOMMAND="rivet -a {rivetAnalysis} temp$i.hepmc2g"
 fi
 
 cd $workdir
@@ -278,8 +286,8 @@ cp temp.cmnd temp$i.cmnd
 echo "Random:setSeed = on" >> temp$i.cmnd
 echo "Random:seed = $((1000+{instanceNumber}*30+$i))" >> temp$i.cmnd
 mkfifo temp$i.hepmc2g
-#cat > temp$i.hepmc2g &
-#exec 3<temp$i.hepmc2g &
+cat > temp$i.hepmc2g &
+exec 3<temp$i.hepmc2g &
 GENERATORCOMMAND="./pythia*/examples/main42.exe temp$i.cmnd temp$i.hepmc2g"
 echo "ANALYZERCOMMAND is: $ANALYZERCOMMAND" >> /bootstrap.log
 echo "GENERATORCOMMAND is: $GENERATORCOMMAND" >> /bootstrap.log

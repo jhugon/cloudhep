@@ -67,8 +67,8 @@ spotInstanceMaxPrices ={
 spotInstanceMaxPrice = spotInstanceMaxPrices[args.instanceType]
 
 # For Ubuntu Trusty 14.04 LTS 64-bit
-packageURL = "http://s3.amazonaws.com/cloud-hep-testing-1/analysisPkg1.tar.xz"
-packageName = "analysisPkg1.tar.xz"
+packageURL = "http://s3.amazonaws.com/cloud-hep-testing-1/analysisPkg2.tar.xz"
+packageName = "analysisPkg2.tar.xz"
 
 minbiasFileURL = "null"
 doPileup = 0
