@@ -281,14 +281,21 @@ if (($ANALYZERTOUSE == 1)); then
 fi
 
 cd $workdir
-# Pythia
-cp temp.cmnd temp$i.cmnd
-echo "Random:setSeed = on" >> temp$i.cmnd
-echo "Random:seed = $((1000+{instanceNumber}*30+$i))" >> temp$i.cmnd
 mkfifo temp$i.hepmc2g
 #cat > temp$i.hepmc2g &
 #exec 3<temp$i.hepmc2g &
-GENERATORCOMMAND="./pythia*/examples/main42.exe temp$i.cmnd temp$i.hepmc2g"
+GENERATORCOMMAND="null"
+if (($GENTOUSE == 0)); then
+  # Pythia
+  cp temp.cmnd temp$i.cmnd
+  echo "Random:setSeed = on" >> temp$i.cmnd
+  echo "Random:seed = $((1000+{instanceNumber}*30+$i))" >> temp$i.cmnd
+  GENERATORCOMMAND="./pythia*/examples/main42.exe temp$i.cmnd temp$i.hepmc2g"
+fi
+if (($GENTOUSE == 1)); then
+  # Sherpa
+  GENERATORCOMMAND="Sherpa -f temp.cmnd -R $((1000+{instanceNumber}*30+$i)) HEPMC2_GENEVENT_OUTPUT=temp$i"
+fi
 echo "ANALYZERCOMMAND is: $ANALYZERCOMMAND" >> /bootstrap.log
 echo "GENERATORCOMMAND is: $GENERATORCOMMAND" >> /bootstrap.log
 if (($ANALYZERTOUSE == 0)); then
