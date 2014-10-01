@@ -281,23 +281,23 @@ if (($ANALYZERTOUSE == 1)); then
 fi
 
 cd $workdir
-echo "Starting Pythia & Spods Job $i" >> /bootstrap.log
+# Pythia
 cp temp.cmnd temp$i.cmnd
 echo "Random:setSeed = on" >> temp$i.cmnd
 echo "Random:seed = $((1000+{instanceNumber}*30+$i))" >> temp$i.cmnd
 mkfifo temp$i.hepmc2g
-cat > temp$i.hepmc2g &
-exec 3<temp$i.hepmc2g &
+#cat > temp$i.hepmc2g &
+#exec 3<temp$i.hepmc2g &
 GENERATORCOMMAND="./pythia*/examples/main42.exe temp$i.cmnd temp$i.hepmc2g"
 echo "ANALYZERCOMMAND is: $ANALYZERCOMMAND" >> /bootstrap.log
 echo "GENERATORCOMMAND is: $GENERATORCOMMAND" >> /bootstrap.log
-$GENERATORCOMMAND >& logGen$i &
-genpids=$genpids$!" "
 if (($ANALYZERTOUSE == 0)); then
   cat temp$i.hepmc2g | $ANALYZERCOMMAND >& logAna$i &
 else
   $ANALYZERCOMMAND >& logAna$i &
 fi
+genpids=$genpids$!" "
+$GENERATORCOMMAND >& logGen$i &
 genpids=$genpids$!" "
 done
 echo "Started Pythia & Spods Jobs" >> /bootstrap.log
