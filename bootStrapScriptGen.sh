@@ -258,6 +258,11 @@ if (($GENTOUSE == 2)); then
   echo `date` >> /bootstrap.log
 fi
 
+echo "###########################################" >> /bootstrap.log
+echo "About to run jobs.  Work directory contents:" >> /bootstrap.log
+ls $workdir >> /bootstrap.log
+echo "###########################################" >> /bootstrap.log
+
 ## Running Jobs
 ANALYZERTOUSE={analyzerToUse}
 {stupidLine}
@@ -294,7 +299,7 @@ if (($GENTOUSE == 0)); then
 fi
 if (($GENTOUSE == 1)); then
   # Sherpa
-  GENERATORCOMMAND="Sherpa -f temp.cmnd -R $((1000+{instanceNumber}*30+$i)) HEPMC2_GENEVENT_OUTPUT=temp$i"
+  GENERATORCOMMAND="Sherpa -f temp.cmnd -R $((1000+{instanceNumber}*30+$i)) EVENT_OUTPUT=HepMC_GenEvent[temp$i]"
 fi
 echo "ANALYZERCOMMAND is: $ANALYZERCOMMAND" >> /bootstrap.log
 echo "GENERATORCOMMAND is: $GENERATORCOMMAND" >> /bootstrap.log

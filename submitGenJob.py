@@ -31,7 +31,6 @@ parser.add_argument("--spot",help="Request EC2 Spot instances instead of on-dema
 parser.add_argument("--pileup",help="int, the poisson mean pileup to generate, default: -",action='store_true', default=False)
 
 parser.add_argument("--sherpaPackage",help="URI to the Sherpa Initialization Results for a Process. The config file will be replaced by the one in here",default="")
-parser.add_argument("--sherpaArg")
 
 args = parser.parse_args()
 
