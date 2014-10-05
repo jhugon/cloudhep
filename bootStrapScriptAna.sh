@@ -2,8 +2,6 @@
 echo "Starting Bootstrap Script" >> /bootstrap.log
 echo `date` >> /bootstrap.log
 export workdir={workDir}
-export AWS_ACCESS_KEY_ID={aws_access_key_id}
-export AWS_SECRET_ACCESS_KEY={aws_secret_key}
 
 hostname {outputName}{instanceNumber}
 

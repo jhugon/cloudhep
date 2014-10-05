@@ -103,8 +103,6 @@ for iInstance in range(len(args.datasets)):
   bootStrapFile = open("bootStrapScriptAna.sh")
   bootStrapScript = bootStrapFile.read()
   bootStrapScript = bootStrapScript.format(
-      aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-      aws_secret_key=os.environ["AWS_SECRET_ACCESS_KEY"],
       bucketName=bucketName,
       location=location,
       processesPerNode=processesPerNode,

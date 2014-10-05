@@ -215,8 +215,6 @@ for iInstance in range(args.numberInstances):
   bootStrapFile = open("bootStrapScriptGen.sh")
   bootStrapScript = bootStrapFile.read()
   bootStrapScript = bootStrapScript.format(
-      aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-      aws_secret_key=os.environ["AWS_SECRET_ACCESS_KEY"],
       configKeyName=configKeyName,
       bucketName=bucketName,
       location=location,

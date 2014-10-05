@@ -5,8 +5,6 @@ echo `date` >> /bootstrap.log
 hostname {outputName}{instanceNumber}
 
 export workdir={workDir}
-export AWS_ACCESS_KEY_ID={aws_access_key_id}
-export AWS_SECRET_ACCESS_KEY={aws_secret_key}
 export NPROC={processesPerNode}
 NUM_VOLUMES={numVolumes}
 DOPILEUP={doPileup}
