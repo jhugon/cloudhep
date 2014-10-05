@@ -4,18 +4,46 @@ CloudHEP
 Setup
 -----
 
-*Your EC2 bucket is will probably need to be changed from the default.  
-Below, it is assumed to be the default:* ``cloud-hep-testing-1`` 
-*The usernames and group neames listed below are examples, but you can use them also.*
+**Your S3 bucket name will probably need to be changed from the default.  
+Below, it is assumed to be the default:** ``cloud-hep-testing-1`` 
+**The user, group, policy and role names listed below are examples, but you 
+probably don't need to change them**
 
 CloudHEP uses the IAM identitiy management system to ensure that your CloudHEP work 
-doesn't compromise the security of your other AWS work.  From the amazon web console, 
-select the IAM service. Create a user, *cloudhepsubmitter* (skip making access keys 
-for now), and a group, *cloudhepsubmitters*.  From the user tab, you may add the user 
+doesn't compromise the security of your other AWS work.  
+
+First you must create a *role* for your EC2 nodes.  From the amazon web 
+console, select the IAM service. Select the *Role* tab, and click 
+*Create New Role*.  Name the role ``cloudhepnoderole``.  Then select 
+*AWS Service Roles* -> *Amazon EC2*.  Then select *Custom Policy* -> *Select*.
+Enter a policy name like ``cloudhepnodepolicy``, and copy paste
+the following policy into the window, replacing ``cloud-hep-testing-1`` with your 
+bucket name:
+
+::
+
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": "s3:*",
+        "Resource": ["arn:aws:s3:::cloud-hep-testing-1/*"]
+      }
+    ]
+  }
+
+Then create the role.  Note the role ARN (something like 
+``arn:aws:iam::1234567890:role/cloudhepnoderole``), as you'll need it later.
+
+
+Next, create a user, ``cloudhepsubmitter`` (skip making access keys 
+for now), and a group, ``cloudhepsubmitters``.  From the user tab, you may add the user 
 to the group.  Then, in the group tab, click on the group.  You can then click on 
 *Attach Policy*, and then select *Custom Policy*.  Enter a policy name like 
 ``cloudhepsubmitterpolicy``, and copy paste the following policy into the window, 
-replacing ``cloud-hep-testing-1`` with your bucket name:
+replacing ``cloud-hep-testing-1`` with your bucket name and ``yourARNfornoderole`` with
+the role ARN you noted earlier:
 
 ::
 
@@ -26,6 +54,16 @@ replacing ``cloud-hep-testing-1`` with your bucket name:
         "Effect": "Allow",
         "Action": "s3:*",
         "Resource": ["arn:aws:s3:::cloud-hep-testing-1/*","arn:aws:s3:::cloud-hep-testing-1"]
+      }
+      {
+        "Effect": "Allow",
+        "Action": "ec2:*",
+        "Resource": "*"
+      }
+      {
+        "Effect": "Allow",
+        "Action": "iam:PassRole",
+        "Resource": "yourARNfornoderole"
       }
     ]
   }
