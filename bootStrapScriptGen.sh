@@ -18,13 +18,24 @@ read -d '' pythonSetupCommand <<"EOF"
 ### Python Setup Script Goes Here: #
 ####################################
 print "Starting pythonSetupCommand"
-import boto
+import boto, boto.sts
 import urllib
 
 print("bucketName: {bucketName}")
 print("location: {location}")
 
-s3 = boto.connect_s3()
+sts_connection = boto.sts.STSConnection()
+assumedRoleObject = sts_connection.assume_role(
+    role_arn="{role_arn}",
+    role_session_name="{outputName}{instanceNumber}setupsess"
+)
+
+s3 = boto.connect_s3(
+    aws_access_key_id=assumedRoleObject.credentials.access_key,
+    aws_secret_access_key=assumedRoleObject.credentials.secret_key,
+    security_token=assumedRoleObject.credentials.session_token
+)
+
 bucket = s3.get_bucket("{bucketName}")
 key = bucket.new_key("{outputName}/{configKeyName}")
 key.get_contents_to_filename("temp.cmnd")
@@ -45,14 +56,15 @@ if {reBuild}==1:
   key.get_contents_to_filename("buildPackages.sh")
   print("key: {outputName}/buildPackages.sh")
 
-idFile = urllib.urlopen('http://169.254.169.254/latest/meta-data/instance-id')
-instanceID = ""
-for line in idFile:
-  instanceID = line
-nameString = "{outputName}{instanceNumber} CloudHEP"
-
-ec2 = boto.connect_ec2()
-ec2.create_tags([instanceID],{{"Name": nameString}})
+# I don't think I want the node to be able to mess around with EC2
+#idFile = urllib.urlopen('http://169.254.169.254/latest/meta-data/instance-id')
+#instanceID = ""
+#for line in idFile:
+#  instanceID = line
+#nameString = "{outputName}{instanceNumber} CloudHEP"
+#
+#ec2 = boto.connect_ec2()
+#ec2.create_tags([instanceID],{{"Name": nameString}})
 
 print "Done."
 ####################################
@@ -65,11 +77,22 @@ read -d '' pythonCleanupCommand <<"EOF"
 ### Python Cleanup Script Goes Here:
 ####################################
 print "Starting pythonCleanupCommand"
-import boto
+import boto, boto.sts
 
 useReducedRedundancy = {useReducedRedundancy}
 
-s3 = boto.connect_s3()
+sts_connection = boto.sts.STSConnection()
+assumedRoleObject = sts_connection.assume_role(
+    role_arn="{role_arn}",
+    role_session_name="{outputName}{instanceNumber}cleanupsess"
+)
+
+s3 = boto.connect_s3(
+    aws_access_key_id=assumedRoleObject.credentials.access_key,
+    aws_secret_access_key=assumedRoleObject.credentials.secret_key,
+    security_token=assumedRoleObject.credentials.session_token
+)
+
 bucket = s3.get_bucket("{bucketName}")
 print("bucketName: {bucketName}")
 print("location: {location}")

@@ -157,6 +157,16 @@ if args.dontTerminate:
 if args.build:
   print("Will build analysis tools from source")
 
+# Get ARNs for node role and instance-profile
+node_role_arn = os.environ.get("CLOUDHEP_NODE_ARN")
+instance_profile_arn = os.environ.get("CLOUDHEP_NODE_INSTANCE_PROFILE")
+if not node_role_arn:
+  print("Error: CLOUDHEP_NODE_ARN env var not set\nExiting")
+  sys.exit(1)
+if not instance_profile_arn:
+  print("Error: CLOUDHEP_NODE_INSTANCE_PROFILE env var not set\nExiting")
+  sys.exit(1)
+
 ####################################
 
 if not TESTING:
@@ -240,6 +250,7 @@ for iInstance in range(args.numberInstances):
       minbiasFileURL = minbiasFileURL,
       doPileup = doPileup,
       sherpaPackage=args.sherpaPackage,
+      role_arn = node_role_arn,
       stupidLine="for i in {0.."+str(processesToRun-1)+"}; do"
       )
   bootStrapFile.close()
@@ -263,7 +274,8 @@ for iInstance in range(args.numberInstances):
           instance_type=args.instanceType,
           key_name = "key2",
           user_data = bootStrapScript,
-          block_device_map = blockDeviceMap
+          block_device_map = blockDeviceMap,
+          instance_profile_arn=instance_profile_arn 
           )
       print "Spot instance requested"
     else:
@@ -275,6 +287,7 @@ for iInstance in range(args.numberInstances):
           key_name = "key2",
           user_data = bootStrapScript,
           block_device_map = blockDeviceMap,
-          instance_initiated_shutdown_behavior='terminate'
+          instance_initiated_shutdown_behavior='terminate',
+          instance_profile_arn=instance_profile_arn 
           )
       print "On-demand instance requested"
