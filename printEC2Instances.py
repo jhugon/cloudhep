@@ -5,9 +5,6 @@
 
 import os
 import boto
-from boto.s3.connection import Location
-from boto.ec2.blockdevicemapping import BlockDeviceType
-from boto.ec2.blockdevicemapping import BlockDeviceMapping
 
 ec2 = boto.connect_ec2()
 

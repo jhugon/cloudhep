@@ -10,6 +10,7 @@ NUM_VOLUMES={numVolumes}
 DOPILEUP={doPileup}
 GENTOUSE={genToUse}
 SHERPAPACKAGE={sherpaPackage}
+SHERPA_PARAMS=""
 genpids=""
 export HOME="/root"  #Hack to try to make Gosam work
 
@@ -194,7 +195,7 @@ fi
 echo "export LESS='-R'" >> /etc/profile
 
 sudo apt-get update
-sudo apt-get install -y python-boto build-essential xorg xorg-dev gfortran subversion bzr cvs htop libboost-dev libgsl0-dev libgsl0-dev python-dev swig zlib1g-dev libboost-iostreams-dev scons  automake autoconf libtool clang-3.5 git libsqlite3-dev tcl
+sudo apt-get install -y python-boto build-essential xorg xorg-dev gfortran subversion bzr cvs htop libboost-dev libgsl0-dev libgsl0-dev python-dev swig zlib1g-dev libboost-iostreams-dev scons  automake autoconf libtool clang-3.5 git libsqlite3-dev tcl default-jre-headless realpath
 echo "apt-get update'd and install'd" >> /bootstrap.log
 
 mkdir $workdir
@@ -251,8 +252,20 @@ if (($GENTOUSE == 1)); then
       echo "Re-running Sherpa Initialization Job" >> /bootstrap.log
       Sherpa -f tempSetup.cmnd -j $NPROC 2>&1 >> logGenSetup
     fi
+    if [ -a "OLE_order.lh" ]; then
+      sed -i "1iModel SMdiag" OLE_order.lh  ## Assumes SM
+      sed -i "/ResonanceTreatment/s/^/#/" OLE_order.lh
+      sed -i "/EWRenormalisationScheme/s/^/#/" OLE_order.lh
+      sed -i "/SuccessiveMultiplicities/s/^/#/" OLE_order.lh
+      gosam.py --olp --mc=Sherpa OLE_order.lh >& logGoSam
+      ./autogen.sh --prefix=$(pwd) >& logGoSamAutogen
+      make install -j $NPROC >& logGoSamMake
+      cp OLE_order.olc OLE_contract.lh
+      cp lib/libgolem_olp.so .
+      SHERPA_PARAMS=$SHERPA_PARAMS" SHERPA_LDADD=golem_olp"
+    fi
     echo "Creating Sherpa Result archive Results.tar.xz" >> /bootstrap.log
-    tar cJf Results.tar.xz temp.cmnd Results/ Process/
+    tar cJf Results.tar.xz temp.cmnd Results/ Process/ *.db OLE* *.so
     echo `date` >> /bootstrap.log
     echo "Done with all Sherpa Initialization" >> /bootstrap.log
   else
@@ -320,7 +333,7 @@ if (($GENTOUSE == 0)); then
 fi
 if (($GENTOUSE == 1)); then
   # Sherpa
-  GENERATORCOMMAND="Sherpa -f temp.cmnd -R $((1000+{instanceNumber}*30+$i)) EVENT_OUTPUT=HepMC_GenEvent[temp$i]"
+  GENERATORCOMMAND="Sherpa -f temp.cmnd -R $((1000+{instanceNumber}*30+$i)) EVENT_OUTPUT=HepMC_GenEvent[temp$i] $SHERPA_PARAMS"
 fi
 echo "ANALYZERCOMMAND is: $ANALYZERCOMMAND" >> /bootstrap.log
 echo "GENERATORCOMMAND is: $GENERATORCOMMAND" >> /bootstrap.log
