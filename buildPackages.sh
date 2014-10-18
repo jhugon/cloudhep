@@ -67,30 +67,6 @@ export PATH=$PATH:$workdir/fastjet/bin
 echo "export PATH=\$PATH:\`pwd\`/fastjet/bin" >> $workdir/setupEnv.sh
 echo "made fastjet" >> /bootstrap.log
 
-# For v5
-wget http://www.hepforge.org/archive/lhapdf/lhapdf-5.9.1.tar.gz
-tar xzf lhapdf-5*.tar.gz
-cd lhapdf-5*
-./configure --prefix=$workdir/lhapdf >& logConf
-make -j$NPROC >& logBuild
-make install >& logInstall
-cd $workdir
-#export LHAPDFPATH=`pwd`/lhapdf
-#echo "export LHAPDFPATH=\`pwd\`/lhapdf" >> $workdir/setupEnv.sh
-#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$workdir/lhapdf/lib
-#echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\`pwd\`/lhapdf/lib" >> $workdir/setupEnv.sh
-#export PATH=$PATH:$workdir/lhapdf/bin
-#echo "export PATH=\$PATH:\`pwd\`/lhapdf/bin" >> $workdir/setupEnv.sh
-#echo "made lhapdf" >> /bootstrap.log
-#echo "Downloading PDFs..." >> /bootstrap.log
-#cd $workdir/lhapdf/share/lhapdf
-##lhapdf-getdata CTEQ6ll CTEQ66 CTEQ6m lomod MCal CT10NLO NNPDF23_nlo_as MSTW2008nlo68cl MSTW2008lo68cl 2>&1 >> /bootstrap.log
-#lhapdf-getdata CTEQ6ll CTEQ66 CTEQ6m lomod MCal CT10NLO 2>&1 >> /bootstrap.log
-#echo "Contents of lhapdf/share/lhapdf/" >> /bootstrap.log
-#ls -lh >> /bootstrap.log
-#cd $workdir
-#echo "done Downloading PDFs." >> /bootstrap.log
-
 # For v6
 wget http://www.hepforge.org/archive/lhapdf/LHAPDF-6.1.4.tar.gz 
 tar xzf LHAPDF-6*.tar.gz
@@ -117,25 +93,27 @@ ls -lh >> /bootstrap.log
 cd $workdir
 echo "done Downloading PDFs." >> /bootstrap.log
 
-wget http://home.thep.lu.se/~torbjorn/pythia8/pythia8186.tgz
+export PYTHIA8=$workdir/pythia
+wget http://home.thep.lu.se/~torbjorn/pythia8/pythia8201.tgz
 tar xzf pythia*gz
 cd pythia*
-./configure --with-hepmc=$HEPMCLOCATION --with-hepmcversion=$HEPMCVERSION --enable-shared --enable-gzip --with-zlib=/usr/lib/x86_64-linux-gnu >& logConf
+./configure --prefix=$PYTHIA8 --with-hepmc2=$HEPMCLOCATION --with-lhapdf6=$LHAPDFPATH --with-root=$ROOTSYS --with-fastjet3=$FASTJETPATH --with-boost --with-gzip --enable-shared >& logConf
 make -j$NPROC >& logBuild
-cp include/Pythia8/Pythia.h include/.  # hack for Delphes
-export PYTHIA8=`pwd`
-export PYTHIA8DATA=$PYTHIA8/xmldoc
+make install >& logInstall
+cp $PYTHIA8/include/Pythia8/Pythia.h $PYTHIA8/include/.  # hack for Delphes
+export PYTHIA8DATA=$PYTHIA8/share/Pythia8/xmldoc
 export LIBRARY_PATH=$LIBRARY_PATH:$PYTHIA8/lib
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PYTHIA8/lib
-echo "cd pythia*" >> $workdir/setupEnv.sh
-echo "export PYTHIA8=\`pwd\`" >> $workdir/setupEnv.sh
-echo "export PYTHIA8DATA=\$PYTHIA8/xmldoc" >> $workdir/setupEnv.sh
+export PYTHIA8EXAMPLES=$PYTHIA8/share/Pythia8/examples
+echo "export PYTHIA8=\$workdir/pythia" >> $workdir/setupEnv.sh
+echo "export PYTHIA8DATA=\$PYTHIA8/share/Pythia8/xmldoc" >> $workdir/setupEnv.sh
 echo "export LIBRARY_PATH=\$LIBRARY_PATH:\$PYTHIA8/lib" >> $workdir/setupEnv.sh
 echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$PYTHIA8/lib" >> $workdir/setupEnv.sh
-cd examples
-make -j$NPROC main42 >& logBuild42
+echo "export PYTHIA8EXAMPLES=\$PYTHIA8/share/Pythia8/examples" >> $workdir/setupEnv.sh
+cd $PYTHIA8EXAMPLES/
+make main42 >& logBuild42
+make main89 >& logBuild89
 cd $workdir
-echo "cd .." >> $workdir/setupEnv.sh
 echo "made PYTHIA8" >> /bootstrap.log
 
 wget http://www.hepforge.org/archive/sherpa/SHERPA-MC-2.1.1.tar.gz
@@ -241,7 +219,7 @@ cd $workdir
 wget http://cp3.irmp.ucl.ac.be/downloads/Delphes-3.1.2.tar.gz
 tar xzf Delphes*.tar.gz
 cd Delphes*/
-make -j$NPROC >& logBuild
+env -u PYTHIA8 env -u PYTHIA8DATA make -j$NPROC >& logBuild  # hack for pythia 8.2
 export DELPHESDIR=`pwd`
 echo "cd \$workdir/Delphes*/" >> $workdir/setupEnv.sh
 echo "export DELPHESDIR=\`pwd\`" >> $workdir/setupEnv.sh

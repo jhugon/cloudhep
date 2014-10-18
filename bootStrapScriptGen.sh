@@ -329,7 +329,7 @@ if (($GENTOUSE == 0)); then
   cp temp.cmnd temp$i.cmnd
   echo "Random:setSeed = on" >> temp$i.cmnd
   echo "Random:seed = $((1000+{instanceNumber}*30+$i))" >> temp$i.cmnd
-  GENERATORCOMMAND="./pythia*/examples/main42.exe temp$i.cmnd temp$i.hepmc2g"
+  GENERATORCOMMAND="$PYTHIA8EXAMPLES/main42 temp$i.cmnd temp$i.hepmc2g"
 fi
 if (($GENTOUSE == 1)); then
   # Sherpa
